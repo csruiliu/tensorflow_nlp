@@ -38,9 +38,9 @@ def ptb_raw_data(data_path=None):
     train_data = _file_to_word_ids(train_path, word_to_id)
     valid_data = _file_to_word_ids(valid_path, word_to_id)
     test_data = _file_to_word_ids(test_path, word_to_id)
-    vocabulary = len(word_to_id)
+    vocabulary_size = len(word_to_id)
 
-    return train_data, valid_data, test_data, vocabulary
+    return train_data, valid_data, test_data, vocabulary_size
 
 
 def ptb_iterator(raw_data, batch_size, num_steps):
@@ -63,6 +63,7 @@ def ptb_iterator(raw_data, batch_size, num_steps):
     raw_data = np.array(raw_data, dtype=np.int32)
 
     data_len = len(raw_data)
+
     # the number of batches
     batch_num = data_len // batch_size
 
@@ -82,3 +83,32 @@ def ptb_iterator(raw_data, batch_size, num_steps):
         x = data[:, i * num_steps:(i + 1) * num_steps]
         y = data[:, i * num_steps + 1:(i + 1) * num_steps + 1]
         yield x, y
+
+
+def ptb_batch_iterator(raw_data, batch_size, num_steps, vocab_size):
+    raw_data = np.array(raw_data, dtype=np.int32)
+    data_len = len(raw_data)
+    batch_num = data_len // batch_size
+
+    data = np.zeros([batch_size, batch_num], dtype=np.int32)
+
+    for i in range(batch_size):
+        data[i] = raw_data[batch_num * i:batch_num * (i + 1)]
+
+    epoch_size = (batch_num - 1) // num_steps
+
+    if epoch_size == 0:
+        raise ValueError("epoch_size == 0, decrease batch_size or num_steps")
+
+    for i in range(epoch_size):
+        x = data[:, i * num_steps:(i + 1) * num_steps]
+        x_one_hot = np.zeros((batch_size, num_steps, vocab_size))
+        for j in range(batch_size):
+            x_one_hot[j, np.arange(num_steps), x[j]] = 1
+
+        y = data[:, (i + 1) * num_steps + 1]
+        y_one_hot = np.zeros((batch_size, vocab_size))
+        for k in range(batch_size):
+            y_one_hot[k, y[k]] = 1
+
+        yield x_one_hot, y_one_hot
