@@ -4,9 +4,18 @@ import numpy as np
 
 
 class Transformer:
-    def __init__(self, num_heads=8, dim_embedding=512, dim_feedforward=2048, num_enc_layers=6, num_dec_layers=6,
-                 drop_rate=0.1, warmup_steps=400, pos_encoding_type='sinusoid',
-                 ls_epsilon=0.1, use_label_smoothing=True, model_name='transformer'):
+    def __init__(self,
+                 num_heads=8,
+                 dim_embedding=512,
+                 dim_feedforward=2048,
+                 num_enc_layers=6,
+                 num_dec_layers=6,
+                 drop_rate=0.1,
+                 warmup_steps=400,
+                 pos_encoding_type='sinusoid',
+                 ls_epsilon=0.1,
+                 use_label_smoothing=True,
+                 model_name='transformer'):
         """
         Args:
             num_heads [int]: number of heads in multi-head attention unit.
