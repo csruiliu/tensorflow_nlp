@@ -25,5 +25,7 @@ def train_model(model, train_labels, opt='Adam', lr=0.001):
 
 
 def eval_model(model, eval_labels):
-    predict = tf.argmax(model, 1)
-    print(predict)
+    prediction = tf.equal(tf.argmax(model, -1), tf.argmax(eval_labels, -1))
+    eval_op = tf.reduce_mean(tf.cast(prediction, tf.float32))
+
+    return eval_op
