@@ -22,3 +22,8 @@ def train_model(model, train_labels, opt='Adam', lr=0.001):
         raise ValueError('Optimizer is not recognized')
 
     return train_op
+
+
+def eval_model(model, eval_labels):
+    predict = tf.argmax(model, 1)
+    print(predict)
