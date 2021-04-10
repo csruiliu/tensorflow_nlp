@@ -17,8 +17,10 @@ class NNLM:
         # parameter of b
         b = tf.Variable(tf.random_normal([self.num_class]))
 
+        train_feature_reshape = tf.reshape(train_feature, shape=[-1, self.num_step * self.num_class])
+
         # [batch_size, n_hidden]
-        tanh = tf.nn.tanh(d + tf.matmul(train_feature, H))
+        tanh = tf.nn.tanh(d + tf.matmul(train_feature_reshape, H))
 
         model = tf.matmul(tanh, U) + b  # [batch_size, n_class]
 
