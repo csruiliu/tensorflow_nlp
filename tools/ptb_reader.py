@@ -155,7 +155,13 @@ def ptb_batch_iterator(raw_data, batch_size, num_steps, vocab_size):
 
 
 def ptb_batch_iterator_skipgrams(raw_data, batch_size, vocab_size):
-    for i in np.arange(0, len(raw_data), batch_size):
-        random_input = np.eye(vocab_size)[raw_data[i][0]]
-        random_label = np.eye(vocab_size)[raw_data[i][1]]
+    epoch_size = (len(raw_data) - 1) // batch_size
+
+    for i in range(epoch_size):
+        random_input = np.zeros((batch_size, vocab_size))
+        random_label = np.zeros((batch_size, vocab_size))
+        for j in range(batch_size):
+            random_input[j, raw_data[i*batch_size + j][0]] = 1
+            random_label[j, raw_data[i*batch_size + j][1]] = 1
+
         yield random_input, random_label
