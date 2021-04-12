@@ -2,7 +2,7 @@ import tensorflow as tf
 
 
 class AttentionBiLSTM:
-    def __init__(self, n_class, voc_size, n_step=2, n_hidden=2, embedding_dim = 2):
+    def __init__(self, n_class, voc_size, n_step=2, n_hidden=2, embedding_dim=2):
         self.num_class = n_class
         self.num_step = n_step
         self.num_hidden = n_hidden
