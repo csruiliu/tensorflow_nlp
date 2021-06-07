@@ -1,4 +1,4 @@
-# Train NLP models with PTB on TensorFlow # 
+# Train NLP models on TensorFlow # 
 
 ## Download and Prepare the Data ##
 
