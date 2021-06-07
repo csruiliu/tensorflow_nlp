@@ -1,11 +1,12 @@
 import numpy as np
+import os
 from keras.preprocessing.sequence import pad_sequences
+import urllib
 
 import models.lstm
 from models.bi_lstm import BiLSTM
 from models.lstm import LSTMNet
 import tools.udtb_reader as udtb_reader
-import urllib
 
 
 def to_categorical(sequences, categories):
@@ -19,67 +20,38 @@ def to_categorical(sequences, categories):
     return np.array(cat_sequences)
 
 
-def download_files():
-    print('Downloading English treebank...')
-    urllib.request.urlretrieve('http://archive.aueb.gr:8085/files/en_partut-ud-dev.conllu', 'en_partut-ud-dev.conllu')
-    urllib.request.urlretrieve('http://archive.aueb.gr:8085/files/en_partut-ud-test.conllu', 'en_partut-ud-test.conllu')
-    urllib.request.urlretrieve('http://archive.aueb.gr:8085/files/en_partut-ud-train.conllu', 'en_partut-ud-train.conllu')
-    print('Treebank downloaded.')
-
-
 if __name__ == "__main__":
 
-    bert_path = "https://tfhub.dev/google/bert_uncased_L-12_H-768_A-12/1"
-    max_seq_length = 256
-
     ####################################################
-    # Load the dataset
+    # Download and load the dataset
     ####################################################
 
     UD_ENGLISH_TRAIN = './dataset/ud_treebank/en_partut-ud-train.conllu'
     UD_ENGLISH_DEV = './dataset/ud_treebank/en_partut-ud-dev.conllu'
     UD_ENGLISH_TEST = './dataset/ud_treebank/en_partut-ud-test.conllu'
 
+    if not os.path.exists(UD_ENGLISH_TRAIN):
+        urllib.request.urlretrieve('http://archive.aueb.gr:8085/files/en_partut-ud-train.conllu', UD_ENGLISH_TRAIN)
+    if not os.path.exists(UD_ENGLISH_DEV):
+        urllib.request.urlretrieve('http://archive.aueb.gr:8085/files/en_partut-ud-dev.conllu', UD_ENGLISH_DEV)
+    if not os.path.exists(UD_ENGLISH_TEST):
+        urllib.request.urlretrieve('http://archive.aueb.gr:8085/files/en_partut-ud-test.conllu', UD_ENGLISH_TEST)
+
     train_sentences = udtb_reader.read_conllu(UD_ENGLISH_TRAIN)
     val_sentences = udtb_reader.read_conllu(UD_ENGLISH_DEV)
     test_sentences = udtb_reader.read_conllu(UD_ENGLISH_TEST)
-
-    '''
-    ####################################################
-    # Printout the metadata of UD Treebank 
-    ####################################################
-    
-    print("Tagged sentences in train set: ", len(train_sentences))
-    print("Tagged words in train set:", len([item for sublist in train_sentences for item in sublist]))
-    print(40 * '=')
-    print("Tagged sentences in dev set: ", len(val_sentences))
-    print("Tagged words in dev set:", len([item for sublist in val_sentences for item in sublist]))
-    print(40 * '=')
-    print("Tagged sentences in test set: ", len(test_sentences))
-    print("Tagged words in test set:", len([item for sublist in test_sentences for item in sublist]))
-    print(40 * '*')
-    print("Total sentences in dataset:", len(train_sentences) + len(val_sentences) + len(test_sentences))
-    '''
 
     ####################################################
     # Preprocessing
     ####################################################
 
-    # MAX_SEQUENCE_LENGTH = 70
-
-    # train_sentences = udtb_reader.sentence_split(train_sentences, MAX_SEQUENCE_LENGTH)
-    # val_sentences = udtb_reader.sentence_split(val_sentences, MAX_SEQUENCE_LENGTH)
-    # test_sentences = udtb_reader.sentence_split(test_sentences, MAX_SEQUENCE_LENGTH)
-
-    # train_sentences = train_sentences + val_sentences
-
     train_text = udtb_reader.text_sequence(train_sentences)
     test_text = udtb_reader.text_sequence(test_sentences)
-    val_text = udtb_reader.text_sequence(val_sentences)
+    # val_text = udtb_reader.text_sequence(val_sentences)
 
     train_label = udtb_reader.tag_sequence(train_sentences)
     test_label = udtb_reader.tag_sequence(test_sentences)
-    val_label = udtb_reader.tag_sequence(val_sentences)
+    # val_label = udtb_reader.tag_sequence(val_sentences)
 
     ####################################################
     # Build dictionary with tag vocabulary
@@ -150,7 +122,7 @@ if __name__ == "__main__":
 
     logit.fit(train_sentences_X,
               to_categorical(train_tags_y, len(tag2index)),
-              batch_size=128,
+              batch_size=64,
               epochs=10,
               validation_split=0.2)
     scores = logit.evaluate(test_sentences_X, to_categorical(test_tags_y, len(tag2index)))
