@@ -113,10 +113,25 @@ if __name__ == "__main__":
     test_tags_y = pad_sequences(test_tags_y, maxlen=MAX_LENGTH, padding='post')
 
     ####################################################
-    # Build model
+    # Build model for BiLSTM
     ####################################################
 
-    # model = BiLSTM(MAX_LENGTH)
+    model = BiLSTM(MAX_LENGTH)
+    logit = model.build(word2index, tag2index)
+
+    logit.fit(train_sentences_X,
+              to_categorical(train_tags_y, len(tag2index)),
+              batch_size=64,
+              epochs=10,
+              validation_split=0.2)
+    scores = logit.evaluate(test_sentences_X, to_categorical(test_tags_y, len(tag2index)))
+
+    print(f"{logit.metrics_names[1]}: {scores[1]}")
+    
+    ####################################################
+    # Build model for LSTM
+    ####################################################
+
     model = LSTMNet(MAX_LENGTH)
     logit = model.build(word2index, tag2index)
 
