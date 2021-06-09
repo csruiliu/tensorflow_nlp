@@ -7,37 +7,9 @@ import numpy as np
 from bert.tokenization import FullTokenizer
 from tqdm import tqdm
 from tensorflow.keras import backend as K
-import pyconll
 
+from models.bert import BERT
 
-def read_conllu(path):
-    data = pyconll.load_from_file(path)
-    tagged_sentences = list()
-    t = 0
-    for sentence in data:
-        tagged_sentence = list()
-        for token in sentence:
-            if token.upos and token.form:
-                t += 1
-                tagged_sentence.append((token.form.lower(), token.upos))
-        tagged_sentences.append(tagged_sentence)
-    return tagged_sentences
-
-
-def tag_sequence(sentences):
-    return [[t for w, t in sentence] for sentence in sentences]
-
-
-def text_sequence(sentences):
-    return [[w for w, t in sentence] for sentence in sentences]
-
-
-def sentence_split(sentences, max_len):
-    new_sentence = list()
-    for data in sentences:
-        new_sentence.append(([data[x:x + max_len] for x in range(0, len(data), max_len)]))
-    new_sentence = [val for sublist in new_sentence for val in sublist]
-    return new_sentence
 
 # Initialize session
 sess = tf.Session()
@@ -66,6 +38,7 @@ def load_dataset(directory):
 
 # Download and process the dataset files.
 def download_and_load_datasets(force_download=False):
+    # if not os.path.exists('~/.keras/datasets/aclImdb.tar.gz'):
     dataset = tf.keras.utils.get_file(
         fname="aclImdb.tar.gz",
         origin="http://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz",
@@ -80,13 +53,13 @@ def download_and_load_datasets(force_download=False):
 
 class PaddingInputExample(object):
     """Fake example so the num input examples is a multiple of the batch size.
-  When running eval/predict on the TPU, we need to pad the number of examples
-  to be a multiple of the batch size, because the TPU requires a fixed batch
-  size. The alternative is to drop the last batch, which is bad because it means
-  the entire output data won't be generated.
-  We use this class instead of `None` because treating `None` as padding
-  battches could cause silent errors.
-  """
+    When running eval/predict on the TPU, we need to pad the number of examples
+    to be a multiple of the batch size, because the TPU requires a fixed batch
+    size. The alternative is to drop the last batch, which is bad because it means
+    the entire output data won't be generated.
+    We use this class instead of `None` because treating `None` as padding
+    batches could cause silent errors.
+    """
 
 
 class InputExample(object):
@@ -94,15 +67,15 @@ class InputExample(object):
 
     def __init__(self, guid, text_a, text_b=None, label=None):
         """Constructs a InputExample.
-    Args:
-      guid: Unique id for the example.
-      text_a: string. The untokenized text of the first sequence. For single
-        sequence tasks, only this sequence must be specified.
-      text_b: (Optional) string. The untokenized text of the second sequence.
-        Only must be specified for sequence pair tasks.
-      label: (Optional) string. The label of the example. This should be
-        specified for train and dev examples, but not for test examples.
-    """
+            Args:
+            guid: Unique id for the example.
+            text_a: string. The untokenized text of the first sequence.
+                    For single sequence tasks, only this sequence must be specified.
+            text_b: (Optional) string. The untokenized text of the second sequence.
+                    Only must be specified for sequence pair tasks.
+            label: (Optional) string. The label of the example.
+                   This should be specified for train and dev examples, but not for test examples.
+        """
         self.guid = guid
         self.text_a = text_a
         self.text_b = text_b
@@ -193,117 +166,6 @@ def convert_text_to_examples(texts, labels):
     return InputExamples
 
 
-class BertLayer(tf.keras.layers.Layer):
-    def __init__(
-        self,
-        n_fine_tune_layers=2,
-        pooling="mean",
-        bert_path="https://tfhub.dev/google/bert_uncased_L-12_H-768_A-12/1",
-        **kwargs,
-    ):
-        self.n_fine_tune_layers = n_fine_tune_layers
-        self.trainable = True
-        self.output_size = 768
-        self.pooling = pooling
-        self.bert_path = bert_path
-        if self.pooling not in ["first", "mean"]:
-            raise NameError(
-                f"Undefined pooling type (must be either first or mean, but is {self.pooling}"
-            )
-
-        super(BertLayer, self).__init__(**kwargs)
-
-    def build(self, input_shape):
-        self.bert = hub.Module(
-            self.bert_path, trainable=self.trainable, name=f"{self.name}_module"
-        )
-
-        # Remove unused layers
-        trainable_vars = self.bert.variables
-        if self.pooling == "first":
-            trainable_vars = [var for var in trainable_vars if not "/cls/" in var.name]
-            trainable_layers = ["pooler/dense"]
-
-        elif self.pooling == "mean":
-            trainable_vars = [
-                var
-                for var in trainable_vars
-                if not "/cls/" in var.name and not "/pooler/" in var.name
-            ]
-            trainable_layers = []
-        else:
-            raise NameError(
-                f"Undefined pooling type (must be either first or mean, but is {self.pooling}"
-            )
-
-        # Select how many layers to fine tune
-        for i in range(self.n_fine_tune_layers):
-            trainable_layers.append(f"encoder/layer_{str(11 - i)}")
-
-        # Update trainable vars to contain only the specified layers
-        trainable_vars = [
-            var
-            for var in trainable_vars
-            if any([l in var.name for l in trainable_layers])
-        ]
-
-        # Add to trainable weights
-        for var in trainable_vars:
-            self._trainable_weights.append(var)
-
-        for var in self.bert.variables:
-            if var not in self._trainable_weights:
-                self._non_trainable_weights.append(var)
-
-        super(BertLayer, self).build(input_shape)
-
-    def call(self, inputs):
-        inputs = [K.cast(x, dtype="int32") for x in inputs]
-        input_ids, input_mask, segment_ids = inputs
-        bert_inputs = dict(
-            input_ids=input_ids, input_mask=input_mask, segment_ids=segment_ids
-        )
-        if self.pooling == "first":
-            pooled = self.bert(inputs=bert_inputs, signature="tokens", as_dict=True)[
-                "pooled_output"
-            ]
-        elif self.pooling == "mean":
-            result = self.bert(inputs=bert_inputs, signature="tokens", as_dict=True)[
-                "sequence_output"
-            ]
-
-            mul_mask = lambda x, m: x * tf.expand_dims(m, axis=-1)
-            masked_reduce_mean = lambda x, m: tf.reduce_sum(mul_mask(x, m), axis=1) / (
-                    tf.reduce_sum(m, axis=1, keepdims=True) + 1e-10)
-            input_mask = tf.cast(input_mask, tf.float32)
-            pooled = masked_reduce_mean(result, input_mask)
-        else:
-            raise NameError(f"Undefined pooling type (must be either first or mean, but is {self.pooling}")
-
-        return pooled
-
-    def compute_output_shape(self, input_shape):
-        return (input_shape[0], self.output_size)
-
-
-# Build model
-def build_model(max_seq_length):
-    in_id = tf.keras.layers.Input(shape=(max_seq_length,), name="input_ids")
-    in_mask = tf.keras.layers.Input(shape=(max_seq_length,), name="input_masks")
-    in_segment = tf.keras.layers.Input(shape=(max_seq_length,), name="segment_ids")
-    bert_inputs = [in_id, in_mask, in_segment]
-
-    bert_output = BertLayer(n_fine_tune_layers=3)(bert_inputs)
-    dense = tf.keras.layers.Dense(256, activation="relu")(bert_output)
-    pred = tf.keras.layers.Dense(1, activation="sigmoid")(dense)
-
-    model = tf.keras.models.Model(inputs=bert_inputs, outputs=pred)
-    model.compile(loss="binary_crossentropy", optimizer="adam", metrics=["accuracy"])
-    model.summary()
-
-    return model
-
-
 def initialize_vars(sess):
     sess.run(tf.local_variables_initializer())
     sess.run(tf.global_variables_initializer())
@@ -317,23 +179,6 @@ def main():
     max_seq_length = 70
 
     train_df, test_df = download_and_load_datasets()
-    '''
-    UD_ENGLISH_TRAIN = './dataset/ud_treebank/en_partut-ud-train.conllu'
-    UD_ENGLISH_DEV = './dataset/ud_treebank/en_partut-ud-dev.conllu'
-    UD_ENGLISH_TEST = './dataset/ud_treebank/en_partut-ud-test.conllu'
-
-    train_sentences = read_conllu(UD_ENGLISH_TRAIN)
-    val_sentences = read_conllu(UD_ENGLISH_DEV)
-    test_sentences = read_conllu(UD_ENGLISH_TEST)
-
-    train_text = text_sequence(train_sentences)
-    test_text = text_sequence(test_sentences)
-    val_text = text_sequence(val_sentences)
-
-    train_label = tag_sequence(train_sentences)
-    test_label = tag_sequence(test_sentences)
-    val_label = tag_sequence(val_sentences)
-    '''
 
     # Create datasets (Only take up to max_seq_length words for memory)
     train_text = train_df["sentence"].tolist()
@@ -359,24 +204,22 @@ def main():
         train_input_masks,
         train_segment_ids,
         train_labels,
-    ) = convert_examples_to_features(
-        tokenizer, train_examples, max_seq_length=max_seq_length
-    )
+    ) = convert_examples_to_features(tokenizer, train_examples, max_seq_length=max_seq_length)
+
     (
         test_input_ids,
         test_input_masks,
         test_segment_ids,
         test_labels,
-    ) = convert_examples_to_features(
-        tokenizer, test_examples, max_seq_length=max_seq_length
-    )
+    ) = convert_examples_to_features(tokenizer, test_examples, max_seq_length=max_seq_length)
 
-    model = build_model(max_seq_length)
+    model = BERT(max_seq_length)
+    logit = model.build()
 
     # Instantiate variables
     initialize_vars(sess)
 
-    model.fit(
+    logit.fit(
         [train_input_ids, train_input_masks, train_segment_ids],
         train_labels,
         validation_data=(
