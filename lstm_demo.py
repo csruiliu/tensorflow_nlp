@@ -142,4 +142,4 @@ if __name__ == "__main__":
               validation_split=0.2)
     scores = logit.evaluate(test_sentences_X, to_categorical(test_tags_y, len(tag2index)))
 
-    print(f"{logit.metrics_names[1]}: {scores[1]}")
+    print('{}: {}'.format(logit.metrics_names[1], scores[1]))

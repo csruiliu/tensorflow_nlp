@@ -140,7 +140,8 @@ def convert_examples_to_features(tokenizer, examples, max_seq_length=256):
     """Convert a set of `InputExample`s to a list of `InputFeatures`."""
 
     input_ids, input_masks, segment_ids, labels = [], [], [], []
-    for example in tqdm(examples, desc="Converting examples to features"):
+    # for example in tqdm(examples, desc="Converting examples to features"):
+    for example in examples:
         input_id, input_mask, segment_id, label = convert_single_example(
             tokenizer, example, max_seq_length
         )
@@ -222,13 +223,13 @@ def main():
     logit.fit(
         [train_input_ids, train_input_masks, train_segment_ids],
         train_labels,
-        validation_data=(
-            [test_input_ids, test_input_masks, test_segment_ids],
-            test_labels,
-        ),
         epochs=1,
         batch_size=32,
     )
+
+    scores = logit.evaluate([test_input_ids, test_input_masks, test_segment_ids], test_labels)
+
+    print('{}: {}'.format(logit.metrics_names[1], scores[1]))
 
 
 if __name__ == "__main__":
