@@ -214,8 +214,8 @@ def main():
         test_labels,
     ) = convert_examples_to_features(tokenizer, test_examples, max_seq_length=max_seq_length)
 
-    model = BERT(max_seq_length, 128, 2)
-    logit = model.build()
+    model = BERT(max_seq_length, 728, 12)
+    logit, trainable_parameters = model.build()
 
     # Instantiate variables
     initialize_vars(sess)
