@@ -1,6 +1,7 @@
 import tensorflow as tf
 import tensorflow_hub as hub
 from tensorflow.keras import backend as K
+import numpy as np
 
 
 class BertLayer(tf.keras.layers.Layer):
@@ -116,4 +117,7 @@ class BERT:
         model.compile(loss="binary_crossentropy", optimizer="adam", metrics=["accuracy"])
         model.summary()
 
-        return model
+        trainable_count = int(np.sum([K.count_params(p) for p in set(model.trainable_weights)]))
+        # non_trainable_count = int(np.sum([K.count_params(p) for p in set(model.non_trainable_weights)]))
+
+        return model, trainable_count
