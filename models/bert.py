@@ -96,9 +96,11 @@ class BertLayer(tf.keras.layers.Layer):
         return input_shape[0], self.output_size
 
 
-class BERT():
-    def __init__(self, max_length):
+class BERT:
+    def __init__(self, max_length, hidden_size=128, num_hidden_layers=2):
         self.max_seq_length = max_length
+        self.hidden_size = hidden_size
+        self.num_hidden_layers = num_hidden_layers
 
     def build(self):
         in_id = tf.keras.layers.Input(shape=(self.max_seq_length,), name="input_ids")
@@ -106,8 +108,8 @@ class BERT():
         in_segment = tf.keras.layers.Input(shape=(self.max_seq_length,), name="segment_ids")
         bert_inputs = [in_id, in_mask, in_segment]
 
-        bert_output = BertLayer(n_fine_tune_layers=3)(bert_inputs)
-        dense = tf.keras.layers.Dense(256, activation="relu")(bert_output)
+        bert_output = BertLayer(n_fine_tune_layers=self.num_hidden_layers)(bert_inputs)
+        dense = tf.keras.layers.Dense(self.hidden_size, activation="relu")(bert_output)
         pred = tf.keras.layers.Dense(1, activation="sigmoid")(dense)
 
         model = tf.keras.models.Model(inputs=bert_inputs, outputs=pred)

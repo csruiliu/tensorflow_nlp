@@ -105,7 +105,7 @@ def convert_single_example(tokenizer, example, max_seq_length=256):
 
     tokens_a = tokenizer.tokenize(example.text_a)
     if len(tokens_a) > max_seq_length - 2:
-        tokens_a = tokens_a[0 : (max_seq_length - 2)]
+        tokens_a = tokens_a[0: (max_seq_length - 2)]
 
     tokens = []
     segment_ids = []
@@ -214,7 +214,7 @@ def main():
         test_labels,
     ) = convert_examples_to_features(tokenizer, test_examples, max_seq_length=max_seq_length)
 
-    model = BERT(max_seq_length)
+    model = BERT(max_seq_length, 128, 2)
     logit = model.build()
 
     # Instantiate variables
