@@ -98,10 +98,20 @@ class BertLayer(tf.keras.layers.Layer):
 
 
 class BERT:
-    def __init__(self, max_length, hidden_size=128, num_hidden_layers=2):
+    def __init__(self, max_length, hidden_size=128, num_hidden_layers=2, learn_rate=0.01, optimizer='Adam'):
         self.max_seq_length = max_length
         self.hidden_size = hidden_size
         self.num_hidden_layers = num_hidden_layers
+        if optimizer == 'Adam':
+            self.opt = tf.keras.optimizers.Adam(learning_rate=learn_rate)
+        elif optimizer == 'SGD':
+            self.opt = tf.keras.optimizers.SGD(learning_rate=learn_rate)
+        elif optimizer == 'Adagrad':
+            self.opt = tf.keras.optimizers.Adagrad(learning_rate=learn_rate)
+        elif optimizer == 'Momentum':
+            self.opt = tf.keras.optimizers.SGD(learning_rate=learn_rate, momentum=0.9)
+        else:
+            raise ValueError('Optimizer is not recognized')
 
     def build(self):
         in_id = tf.keras.layers.Input(shape=(self.max_seq_length,), name="input_ids")
@@ -114,7 +124,7 @@ class BERT:
         pred = tf.keras.layers.Dense(1, activation="sigmoid")(dense)
 
         model = tf.keras.models.Model(inputs=bert_inputs, outputs=pred)
-        model.compile(loss="binary_crossentropy", optimizer="adam", metrics=["accuracy"])
+        model.compile(loss="binary_crossentropy", optimizer=self.opt, metrics=["accuracy"])
         model.summary()
 
         trainable_count = int(np.sum([K.count_params(p) for p in set(model.trainable_weights)]))
