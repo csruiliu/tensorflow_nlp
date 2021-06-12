@@ -116,7 +116,7 @@ if __name__ == "__main__":
     # Build model for BiLSTM
     ####################################################
 
-    model = BiLSTM(MAX_LENGTH)
+    model = BiLSTM(MAX_LENGTH, learn_rate=0.001, optimizer='Adagrad')
     logit = model.build(word2index, tag2index)
 
     logit.fit(train_sentences_X,
@@ -132,7 +132,7 @@ if __name__ == "__main__":
     # Build model for LSTM
     ####################################################
 
-    model = LSTMNet(MAX_LENGTH)
+    model = LSTMNet(MAX_LENGTH, learn_rate=0.001, optimizer='Adagrad')
     logit = model.build(word2index, tag2index)
 
     logit.fit(train_sentences_X,
