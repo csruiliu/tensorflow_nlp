@@ -2,6 +2,9 @@ import tensorflow as tf
 import tensorflow_hub as hub
 from tensorflow.keras import backend as K
 import numpy as np
+from keras.optimizers import Adam
+from keras.optimizers import SGD
+from keras.optimizers import Adagrad
 
 
 class BertLayer(tf.keras.layers.Layer):
@@ -103,13 +106,13 @@ class BERT:
         self.hidden_size = hidden_size
         self.num_hidden_layers = num_hidden_layers
         if optimizer == 'Adam':
-            self.opt = tf.keras.optimizers.Adam(learning_rate=learn_rate)
+            self.opt = Adam(lr=learn_rate)
         elif optimizer == 'SGD':
-            self.opt = tf.keras.optimizers.SGD(learning_rate=learn_rate)
+            self.opt = SGD(lr=learn_rate)
         elif optimizer == 'Adagrad':
-            self.opt = tf.keras.optimizers.Adagrad(learning_rate=learn_rate)
+            self.opt = Adagrad(lr=learn_rate)
         elif optimizer == 'Momentum':
-            self.opt = tf.keras.optimizers.SGD(learning_rate=learn_rate, momentum=0.9)
+            self.opt = SGD(lr=learn_rate, decay=1e-6, momentum=0.9)
         else:
             raise ValueError('Optimizer is not recognized')
 
