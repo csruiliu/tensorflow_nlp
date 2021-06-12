@@ -1,20 +1,21 @@
 from keras.models import Sequential
 from keras.layers import Dense, LSTM, InputLayer, TimeDistributed, Embedding, Activation
 from keras.optimizers import Adam
-import tensorflow as tf
+from keras.optimizers import SGD
+from keras.optimizers import Adagrad
 
 
 class LSTMNet:
     def __init__(self, max_length, learn_rate=0.01, optimizer='Adam'):
         self.max_length = max_length
         if optimizer == 'Adam':
-            self.opt = tf.keras.optimizers.Adam(learning_rate=learn_rate)
+            self.opt = Adam(lr=learn_rate)
         elif optimizer == 'SGD':
-            self.opt = tf.keras.optimizers.SGD(learning_rate=learn_rate)
+            self.opt = SGD(lr=learn_rate)
         elif optimizer == 'Adagrad':
-            self.opt = tf.keras.optimizers.Adagrad(learning_rate=learn_rate)
+            self.opt = Adagrad(lr=learn_rate)
         elif optimizer == 'Momentum':
-            self.opt = tf.keras.optimizers.SGD(learning_rate=learn_rate, momentum=0.9)
+            self.opt = SGD(lr=learn_rate, decay=1e-6, momentum=0.9)
         else:
             raise ValueError('Optimizer is not recognized')
 
