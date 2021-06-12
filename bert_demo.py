@@ -5,14 +5,9 @@ import os
 import re
 import numpy as np
 from bert.tokenization import FullTokenizer
-from tqdm import tqdm
 from tensorflow.keras import backend as K
 
 from models.bert import BERT
-
-
-# Initialize session
-sess = tf.Session()
 
 
 # Load all files from a directory in a DataFrame.
@@ -38,12 +33,15 @@ def load_dataset(directory):
 
 # Download and process the dataset files.
 def download_and_load_datasets(force_download=False):
-    # if not os.path.exists('~/.keras/datasets/aclImdb.tar.gz'):
-    dataset = tf.keras.utils.get_file(
-        fname="aclImdb.tar.gz",
-        origin="http://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz",
-        extract=True,
-    )
+    if not os.path.exists('/tank/local/ruiliu/datasets/aclImdb.tar.gz'):
+        dataset = tf.keras.utils.get_file(
+            fname="aclImdb.tar.gz",
+            origin="http://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz",
+            extract=True,
+            cache_dir='/tank/local/ruiliu/'
+        )
+    else:
+        dataset = '/tank/local/ruiliu/datasets/aclImdb.tar.gz'
 
     train_df = load_dataset(os.path.join(os.path.dirname(dataset), "aclImdb", "train"))
     test_df = load_dataset(os.path.join(os.path.dirname(dataset), "aclImdb", "test"))
@@ -82,7 +80,7 @@ class InputExample(object):
         self.label = label
 
 
-def create_tokenizer_from_hub_module(bert_path):
+def create_tokenizer_from_hub_module(bert_path, sess):
     """Get the vocab file and casing info from the Hub module."""
     bert_module = hub.Module(bert_path)
     tokenization_info = bert_module(signature="tokenization_info", as_dict=True)
@@ -167,17 +165,10 @@ def convert_text_to_examples(texts, labels):
     return InputExamples
 
 
-def initialize_vars(sess):
-    sess.run(tf.local_variables_initializer())
-    sess.run(tf.global_variables_initializer())
-    sess.run(tf.tables_initializer())
-    K.set_session(sess)
-
-
 def main():
     # Params for bert model and tokenization
     bert_path = "https://tfhub.dev/google/bert_uncased_L-12_H-768_A-12/1"
-    max_seq_length = 70
+    max_seq_length = 256
 
     train_df, test_df = download_and_load_datasets()
 
@@ -192,44 +183,49 @@ def main():
     test_text = np.array(test_text, dtype=object)[:, np.newaxis]
     test_label = test_df["polarity"].tolist()
 
-    # Instantiate tokenizer
-    tokenizer = create_tokenizer_from_hub_module(bert_path)
+    with tf.Session() as sess:
+        # Instantiate tokenizer
+        tokenizer = create_tokenizer_from_hub_module(bert_path, sess)
 
-    # Convert data to InputExample format
-    train_examples = convert_text_to_examples(train_text, train_label)
-    test_examples = convert_text_to_examples(test_text, test_label)
+        # Convert data to InputExample format
+        train_examples = convert_text_to_examples(train_text, train_label)
+        test_examples = convert_text_to_examples(test_text, test_label)
 
-    # Convert to features
-    (
-        train_input_ids,
-        train_input_masks,
-        train_segment_ids,
-        train_labels,
-    ) = convert_examples_to_features(tokenizer, train_examples, max_seq_length=max_seq_length)
+        # Convert to features
+        (
+            train_input_ids,
+            train_input_masks,
+            train_segment_ids,
+            train_labels,
+        ) = convert_examples_to_features(tokenizer, train_examples, max_seq_length=max_seq_length)
 
-    (
-        test_input_ids,
-        test_input_masks,
-        test_segment_ids,
-        test_labels,
-    ) = convert_examples_to_features(tokenizer, test_examples, max_seq_length=max_seq_length)
+        (
+            test_input_ids,
+            test_input_masks,
+            test_segment_ids,
+            test_labels,
+        ) = convert_examples_to_features(tokenizer, test_examples, max_seq_length=max_seq_length)
 
-    model = BERT(max_seq_length, 728, 12)
-    logit, trainable_parameters = model.build()
+        model = BERT(max_seq_length, 256, 3)
+        logit, trainable_parameters = model.build()
 
-    # Instantiate variables
-    initialize_vars(sess)
+        # Instantiate variables
+        sess.run(tf.local_variables_initializer())
+        sess.run(tf.global_variables_initializer())
+        sess.run(tf.tables_initializer())
+        K.set_session(sess)
 
-    logit.fit(
-        [train_input_ids, train_input_masks, train_segment_ids],
-        train_labels,
-        epochs=1,
-        batch_size=32,
-    )
+        logit.fit(
+            [train_input_ids, train_input_masks, train_segment_ids],
+            train_labels,
+            epochs=1,
+            batch_size=32,
+        )
 
-    scores = logit.evaluate([test_input_ids, test_input_masks, test_segment_ids], test_labels)
+        # scores = logit.evaluate([test_input_ids, test_input_masks, test_segment_ids], test_labels)
+        scores = logit.evaluate([train_input_ids, train_input_masks, train_segment_ids], train_labels)
 
-    print('{}: {}'.format(logit.metrics_names[1], scores[1]))
+        print('{}: {}'.format(logit.metrics_names[1], scores[1]))
 
 
 if __name__ == "__main__":
