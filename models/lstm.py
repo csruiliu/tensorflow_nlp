@@ -3,6 +3,8 @@ from keras.layers import Dense, LSTM, InputLayer, TimeDistributed, Embedding, Ac
 from keras.optimizers import Adam
 from keras.optimizers import SGD
 from keras.optimizers import Adagrad
+from keras import backend as K
+import numpy as np
 
 
 class LSTMNet:
@@ -28,8 +30,10 @@ class LSTMNet:
         model.add(TimeDistributed(Dense(len(tag2index))))
         model.add(Activation('softmax'))
 
+        trainable_count = int(np.sum([K.count_params(p) for p in set(model.trainable_weights)]))
+
         model.compile(loss='categorical_crossentropy',
                       optimizer=self.opt,
                       metrics=['accuracy'])
 
-        return model
+        return model, trainable_count
