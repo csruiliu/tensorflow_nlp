@@ -19,7 +19,6 @@ class BiLSTM:
         else:
             raise ValueError('Optimizer is not recognized')
 
-
     def build(self, word2index, tag2index):
         model = Sequential()
         model.add(InputLayer(input_shape=(self.max_length,)))
