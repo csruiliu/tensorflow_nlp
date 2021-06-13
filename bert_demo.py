@@ -168,7 +168,7 @@ def convert_text_to_examples(texts, labels):
 def main():
     # Params for bert model and tokenization
     bert_path = "https://tfhub.dev/google/bert_uncased_L-12_H-768_A-12/1"
-    max_seq_length = 256
+    max_seq_length = 128
 
     train_df, test_df = download_and_load_datasets()
 
@@ -206,7 +206,8 @@ def main():
             test_labels,
         ) = convert_examples_to_features(tokenizer, test_examples, max_seq_length=max_seq_length)
 
-        model = BERT(max_seq_length, 256, 3, learn_rate=0.001, optimizer='Adam')
+        # 128/2 (bert-tiny), 4/256 (bert-mini), 4/512 (bert-small), 8/512 (bert-medium), 12/768 (bert-base)
+        model = BERT(max_seq_length, 128, 2, learn_rate=0.001, optimizer='Adam')
         logit, trainable_parameters = model.build()
 
         # Instantiate variables
@@ -219,7 +220,7 @@ def main():
             [train_input_ids, train_input_masks, train_segment_ids],
             train_labels,
             epochs=1,
-            batch_size=32,
+            batch_size=128,
         )
 
         # scores = logit.evaluate([test_input_ids, test_input_masks, test_segment_ids], test_labels)
