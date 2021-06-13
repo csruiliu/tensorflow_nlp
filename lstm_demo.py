@@ -3,7 +3,6 @@ import os
 from keras.preprocessing.sequence import pad_sequences
 import urllib
 
-import models.lstm
 from models.bi_lstm import BiLSTM
 from models.lstm import LSTMNet
 import tools.udtb_reader as udtb_reader
@@ -117,7 +116,7 @@ if __name__ == "__main__":
     ####################################################
 
     model = BiLSTM(MAX_LENGTH, learn_rate=0.001, optimizer='Adagrad')
-    logit = model.build(word2index, tag2index)
+    logit, _ = model.build(word2index, tag2index)
 
     logit.fit(train_sentences_X,
               to_categorical(train_tags_y, len(tag2index)),
@@ -127,13 +126,13 @@ if __name__ == "__main__":
     scores = logit.evaluate(test_sentences_X, to_categorical(test_tags_y, len(tag2index)))
 
     print(f"{logit.metrics_names[1]}: {scores[1]}")
-    
+
     ####################################################
     # Build model for LSTM
     ####################################################
 
     model = LSTMNet(MAX_LENGTH, learn_rate=0.001, optimizer='Adagrad')
-    logit = model.build(word2index, tag2index)
+    logit, _ = model.build(word2index, tag2index)
 
     logit.fit(train_sentences_X,
               to_categorical(train_tags_y, len(tag2index)),
