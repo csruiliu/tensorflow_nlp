@@ -1,7 +1,7 @@
 import pyconll
-import os
 import urllib
 import numpy as np
+from pathlib import Path
 from keras.preprocessing.sequence import pad_sequences
 
 
@@ -64,19 +64,33 @@ def to_categorical(sequences, categories):
 
 def load_udtb_dataset():
     # Download and load the dataset
-    UD_ENGLISH_TRAIN = './dataset/ud_treebank/en_partut-ud-train.conllu'
-    UD_ENGLISH_DEV = './dataset/ud_treebank/en_partut-ud-dev.conllu'
-    UD_ENGLISH_TEST = './dataset/ud_treebank/en_partut-ud-test.conllu'
+    UDTB_FOLDER = '/tank/local/ruiliu/dataset/ud_treebank'
 
-    if not os.path.exists(UD_ENGLISH_TRAIN):
-        urllib.request.urlretrieve('http://archive.aueb.gr:8085/files/en_partut-ud-train.conllu', UD_ENGLISH_TRAIN)
-    if not os.path.exists(UD_ENGLISH_DEV):
-        urllib.request.urlretrieve('http://archive.aueb.gr:8085/files/en_partut-ud-dev.conllu', UD_ENGLISH_DEV)
-    if not os.path.exists(UD_ENGLISH_TEST):
-        urllib.request.urlretrieve('http://archive.aueb.gr:8085/files/en_partut-ud-test.conllu', UD_ENGLISH_TEST)
+    udtb_folder = Path(UDTB_FOLDER)
+    if not udtb_folder.exists():
+        udtb_folder.mkdir(parents=True, exist_ok=True)
 
-    train_sentences = read_conllu(UD_ENGLISH_TRAIN)
-    val_sentences = read_conllu(UD_ENGLISH_DEV)
+    UD_ENGLISH_TRAIN = 'en_partut-ud-train.conllu'
+    UD_ENGLISH_DEV = 'en_partut-ud-dev.conllu'
+    UD_ENGLISH_TEST = 'en_partut-ud-test.conllu'
+
+    ud_train_file = Path(UDTB_FOLDER + '/' + UD_ENGLISH_TRAIN)
+    if not ud_train_file.exists():
+        urllib.request.urlretrieve('http://archive.aueb.gr:8085/files/en_partut-ud-train.conllu',
+                                   UDTB_FOLDER + '/' + UD_ENGLISH_TRAIN)
+
+    ud_dev_file = Path(UDTB_FOLDER + '/' + UD_ENGLISH_DEV)
+    if not ud_dev_file.exists():
+        urllib.request.urlretrieve('http://archive.aueb.gr:8085/files/en_partut-ud-dev.conllu',
+                                   UDTB_FOLDER + '/' + UD_ENGLISH_DEV)
+
+    ud_test_file = Path(UDTB_FOLDER + '/' + UD_ENGLISH_TEST)
+    if not ud_test_file.exists():
+        urllib.request.urlretrieve('http://archive.aueb.gr:8085/files/en_partut-ud-test.conllu',
+                                   UDTB_FOLDER + '/' + UD_ENGLISH_TEST)
+
+    train_sentences = read_conllu(UDTB_FOLDER + '/' + UD_ENGLISH_TRAIN)
+    val_sentences = read_conllu(UDTB_FOLDER + '/' + UD_ENGLISH_DEV)
 
     # read the train and eval text
     train_text = text_sequence(train_sentences)

@@ -1,5 +1,3 @@
-import numpy as np
-
 from models.bi_lstm import BiLSTM
 from models.lstm import LSTMNet
 import tools.udtb_reader as udtb_reader
@@ -38,7 +36,7 @@ if __name__ == "__main__":
     logit, _ = model.build(word2index, tag2index)
 
     logit.fit(train_sentences_x,
-              to_categorical(train_tags_y, len(tag2index)),
+              udtb_reader.to_categorical(train_tags_y, len(tag2index)),
               batch_size=64,
               epochs=10,
               validation_split=0.2)
