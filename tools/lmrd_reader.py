@@ -2,6 +2,7 @@ import os
 import re
 import pandas as pd
 import numpy as np
+from pathlib import Path
 import tensorflow as tf
 import tensorflow_hub as hub
 from bert.tokenization import FullTokenizer
@@ -30,7 +31,8 @@ def load_dataset(directory):
 
 # Download and process the dataset files.
 def download_and_load_datasets(force_download=False):
-    if not os.path.exists('/tank/local/ruiliu/datasets/aclImdb.tar.gz'):
+    lmrd_file = Path('/tank/local/ruiliu/dataset/aclImdb.tar.gz')
+    if not lmrd_file.exists():
         dataset = tf.keras.utils.get_file(
             fname="aclImdb.tar.gz",
             origin="http://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz",
@@ -38,7 +40,7 @@ def download_and_load_datasets(force_download=False):
             cache_dir='/tank/local/ruiliu/'
         )
     else:
-        dataset = '/tank/local/ruiliu/datasets/aclImdb.tar.gz'
+        dataset = '/tank/local/ruiliu/dataset/aclImdb.tar.gz'
 
     train_df = load_dataset(os.path.join(os.path.dirname(dataset), "aclImdb", "train"))
     test_df = load_dataset(os.path.join(os.path.dirname(dataset), "aclImdb", "test"))
