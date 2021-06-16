@@ -1,6 +1,7 @@
 import pyconll
 import os
 import urllib
+import numpy as np
 from keras.preprocessing.sequence import pad_sequences
 
 
@@ -48,6 +49,17 @@ def convert_ner_format(text, label, file):
             i += 1
             #if i==3: break
     print('Sentences:', i, 'Words:', words)
+
+
+def to_categorical(sequences, categories):
+    cat_sequences = []
+    for s in sequences:
+        cats = []
+        for item in s:
+            cats.append(np.zeros(categories))
+            cats[-1][item] = 1.0
+        cat_sequences.append(cats)
+    return np.array(cat_sequences)
 
 
 def load_udtb_dataset():
