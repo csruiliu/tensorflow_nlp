@@ -1,9 +1,16 @@
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras import backend as K
+from tensorflow import keras
 
 from models.bert import BERT
 import tools.lmrd_reader as lmrd_reader
+
+
+def initialize_vars(sess):
+    sess.run(tf.local_variables_initializer())
+    sess.run(tf.global_variables_initializer())
+    sess.run(tf.tables_initializer())
+    keras.backend.set_session(sess)
 
 
 def main():
@@ -23,6 +30,8 @@ def main():
     test_text = [" ".join(t.split()[0:max_seq_length]) for t in test_text]
     test_text = np.array(test_text, dtype=object)[:, np.newaxis]
     test_label = test_df["polarity"].tolist()
+
+    offset = 500
 
     with tf.Session() as sess:
         # Instantiate tokenizer
@@ -52,10 +61,7 @@ def main():
         logit, trainable_parameters = model.build()
 
         # Instantiate variables
-        sess.run(tf.local_variables_initializer())
-        sess.run(tf.global_variables_initializer())
-        sess.run(tf.tables_initializer())
-        K.set_session(sess)
+        initialize_vars(sess)
 
         logit.fit(
             [train_input_ids, train_input_masks, train_segment_ids],
@@ -65,7 +71,23 @@ def main():
         )
 
         # scores = logit.evaluate([test_input_ids, test_input_masks, test_segment_ids], test_labels)
-        scores = logit.evaluate([train_input_ids, train_input_masks, train_segment_ids], train_labels)
+        scores = logit.evaluate([train_input_ids[0:offset],
+                                 train_input_masks[0:offset],
+                                 train_segment_ids[0:offset]],
+                                train_labels)
+
+        print('{}: {}'.format(logit.metrics_names[1], scores[1]))
+
+        logit.save('bertmodel.h5')
+
+        logit, trainable_parameters = model.build()
+        initialize_vars(sess)
+        logit.load_weights('BertModel.h5')
+
+        scores = logit.evaluate([train_input_ids[0:offset],
+                                 train_input_masks[0:offset],
+                                 train_segment_ids[0:offset]],
+                                train_labels)
 
         print('{}: {}'.format(logit.metrics_names[1], scores[1]))
 
