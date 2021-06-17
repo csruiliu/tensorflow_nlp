@@ -56,7 +56,7 @@ if __name__ == "__main__":
     config.gpu_options.allow_growth = True
 
     with tf.Session(config=config) as sess:
-
+        sess.run(tf.global_variables_initializer())
         model = LSTMNet(MAX_LENGTH, learn_rate=0.001, optimizer='Adagrad')
         logit, _ = model.build(word2index, tag2index)
 
