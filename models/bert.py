@@ -1,6 +1,5 @@
 import tensorflow as tf
 import tensorflow_hub as hub
-from tensorflow.keras import backend as K
 import numpy as np
 
 
@@ -78,7 +77,7 @@ class BertLayer(tf.keras.layers.Layer):
         super(BertLayer, self).build(input_shape)
 
     def call(self, inputs):
-        inputs = [K.cast(x, dtype="int32") for x in inputs]
+        inputs = [tf.keras.backend.cast(x, dtype="int32") for x in inputs]
         input_ids, input_mask, segment_ids = inputs
         bert_inputs = dict(
             input_ids=input_ids, input_mask=input_mask, segment_ids=segment_ids
@@ -134,9 +133,9 @@ class BERT:
 
         model = tf.keras.models.Model(inputs=bert_inputs, outputs=pred)
         model.compile(loss="binary_crossentropy", optimizer=self.opt, metrics=["accuracy"])
-        model.summary()
+        # model.summary()
 
-        trainable_count = int(np.sum([K.count_params(p) for p in set(model.trainable_weights)]))
+        trainable_count = int(np.sum([tf.keras.backend.count_params(p) for p in set(model.trainable_weights)]))
         # non_trainable_count = int(np.sum([K.count_params(p) for p in set(model.non_trainable_weights)]))
 
         return model, trainable_count
