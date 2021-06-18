@@ -74,7 +74,7 @@ def main():
         scores = logit.evaluate([train_input_ids[0:offset],
                                  train_input_masks[0:offset],
                                  train_segment_ids[0:offset]],
-                                train_labels)
+                                train_labels[0:offset])
 
         print('{}: {}'.format(logit.metrics_names[1], scores[1]))
 
@@ -87,7 +87,7 @@ def main():
         scores = logit.evaluate([train_input_ids[0:offset],
                                  train_input_masks[0:offset],
                                  train_segment_ids[0:offset]],
-                                train_labels)
+                                train_labels[0:offset])
 
         print('{}: {}'.format(logit.metrics_names[1], scores[1]))
 
