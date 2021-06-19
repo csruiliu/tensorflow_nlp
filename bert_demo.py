@@ -82,7 +82,7 @@ def main():
 
         logit, trainable_parameters = model.build()
         initialize_vars(sess)
-        logit.load_weights('BertModel.h5')
+        logit.load_weights('bertmodel.h5')
 
         scores = logit.evaluate([train_input_ids[0:offset],
                                  train_input_masks[0:offset],
