@@ -10,9 +10,9 @@ from bert.tokenization import FullTokenizer
 
 # Load all files from a directory in a DataFrame.
 def load_directory_data(directory):
-    data = {}
-    data["sentence"] = []
-    data["sentiment"] = []
+    data = dict()
+    data["sentence"] = list()
+    data["sentiment"] = list()
     for file_path in os.listdir(directory):
         with tf.gfile.GFile(os.path.join(directory, file_path), "r") as f:
             data["sentence"].append(f.read())
@@ -44,9 +44,9 @@ def download_and_load_datasets(force_download=False):
         dataset = '/tank/local/ruiliu/dataset/aclImdb.tar.gz'
 
     train_df = load_dataset(os.path.join(os.path.dirname(dataset), "aclImdb", "train"))
-    test_df = load_dataset(os.path.join(os.path.dirname(dataset), "aclImdb", "test"))
+    # test_df = load_dataset(os.path.join(os.path.dirname(dataset), "aclImdb", "test"))
 
-    return train_df, test_df
+    return train_df
 
 
 class PaddingInputExample(object):
