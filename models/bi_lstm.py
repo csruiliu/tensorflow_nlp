@@ -9,7 +9,7 @@ class BiLSTM:
         if optimizer == 'Adam':
             self.opt = keras.optimizers.Adam(learning_rate=learn_rate)
         elif optimizer == 'SGD':
-            self.opt = keras.optimizers.Adam(learning_rate=learn_rate)
+            self.opt = keras.optimizers.SGD(learning_rate=learn_rate)
         elif optimizer == 'Adagrad':
             self.opt = keras.optimizers.Adagrad(learning_rate=learn_rate)
         elif optimizer == 'Momentum':
