@@ -44,9 +44,9 @@ def download_and_load_datasets(force_download=False):
         dataset = '/tank/local/ruiliu/dataset/aclImdb.tar.gz'
 
     train_df = load_dataset(os.path.join(os.path.dirname(dataset), "aclImdb", "train"))
-    # test_df = load_dataset(os.path.join(os.path.dirname(dataset), "aclImdb", "test"))
+    test_df = load_dataset(os.path.join(os.path.dirname(dataset), "aclImdb", "test"))
 
-    return train_df
+    return train_df, test_df
 
 
 class PaddingInputExample(object):
