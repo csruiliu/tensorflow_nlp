@@ -71,10 +71,10 @@ def main():
         )
 
         # scores = logit.evaluate([test_input_ids, test_input_masks, test_segment_ids], test_labels)
-        scores = logit.evaluate([train_input_ids[0:offset],
-                                 train_input_masks[0:offset],
-                                 train_segment_ids[0:offset]],
-                                train_labels[0:offset])
+        scores = logit.evaluate([test_input_ids[0:offset],
+                                 test_input_masks[0:offset],
+                                 test_segment_ids[0:offset]],
+                                test_labels[0:offset])
 
         print('{}: {}'.format(logit.metrics_names[1], scores[1]))
 
@@ -84,10 +84,10 @@ def main():
         initialize_vars(sess)
         logit.load_weights('bertmodel.h5')
 
-        scores = logit.evaluate([train_input_ids[0:offset],
-                                 train_input_masks[0:offset],
-                                 train_segment_ids[0:offset]],
-                                train_labels[0:offset])
+        scores = logit.evaluate([test_input_ids[0:offset],
+                                 test_input_masks[0:offset],
+                                 test_segment_ids[0:offset]],
+                                test_labels[0:offset])
 
         print('{}: {}'.format(logit.metrics_names[1], scores[1]))
 
