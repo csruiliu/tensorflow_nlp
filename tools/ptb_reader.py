@@ -10,6 +10,8 @@ import collections
 '''
 Penn Treebank Dataset
 https://catalog.ldc.upenn.edu/docs/LDC95T7/cl93.html
+The dataset is downloaded from Tomas Mikolov's webpage:
+http://www.fit.vutbr.cz/~imikolov/rnnlm/simple-examples.tgz
 '''
 
 
