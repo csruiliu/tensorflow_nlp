@@ -4,6 +4,11 @@ import numpy as np
 from pathlib import Path
 from keras.preprocessing.sequence import pad_sequences
 
+'''
+Universal Dependencies Treebank Dataset
+https://universaldependencies.org
+'''
+
 
 def read_conllu(path):
     data = pyconll.load_from_file(path)

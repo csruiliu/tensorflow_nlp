@@ -7,6 +7,11 @@ import tensorflow as tf
 import tensorflow_hub as hub
 from bert.tokenization import FullTokenizer
 
+'''
+Large Movie Review Dataset
+https://ai.stanford.edu/~amaas/data/sentiment/
+'''
+
 
 # Load all files from a directory in a DataFrame.
 def load_directory_data(directory):

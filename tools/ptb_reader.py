@@ -7,6 +7,11 @@ import numpy as np
 import os
 import collections
 
+'''
+Penn Treebank Dataset
+https://catalog.ldc.upenn.edu/docs/LDC95T7/cl93.html
+'''
+
 
 def _read_words(filename):
     with tf.io.gfile.GFile(filename, "r") as f:
