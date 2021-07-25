@@ -1,9 +1,15 @@
 # Train NLP models on TensorFlow # 
 
-## Download and Prepare the Data ##
+All the models are tested on TensorFlow 1.15.
 
-The data required for this tutorial is in the data/ directory of the PTB dataset from Tomas Mikolov's webpage:
-http://www.fit.vutbr.cz/~imikolov/rnnlm/simple-examples.tgz
+## LSTM ##
 
-The dataset is already preprocessed and contains overall 10000 different words, including the end-of-sentence marker and a special symbol (<unk>) for rare words. We convert all of them in the reader.py to unique integer identifiers to make it easy for the neural network to process.
+LSTM (Long Short-Term Memory) is an artificial recurrent neural network architecture. The key idea is to use LSTM units partially solve the vanishing gradient problem, since LSTM units allow gradients to also flow unchanged. The similar idea has been applied to convolutional neural network, i.e., residual nerual network. 
+
+The implementation of LSTM is tested on Universal Dependencies Dataset for POS Tagging task.
+
+## BiLSTM ##
+
+
+## BERT ##
 
