@@ -17,6 +17,8 @@ Data Compression Programs Dataset by Matt Mahoney
 http://mattmahoney.net/dc/
 '''
 
+data_index = 0
+
 
 def download_dataset(dc_url, file_name, expected_bytes):
     dc_dataset = Path('./dataset/' + file_name)
@@ -65,9 +67,10 @@ def build_dataset(words, voc_size):
     return data, count, dictionary, reverse_dict
 
 
-def generate_batch(data, batch_size, num_skips, skip_window):
+def generate_batch(batch_data, batch_size, num_skips, skip_window):
     '''
     Args:
+        batch_data: batch data
         batch_size: number of training batch
         num_skips: sample size of each word
         skip_window: the distance for a word can be consider
@@ -85,8 +88,8 @@ def generate_batch(data, batch_size, num_skips, skip_window):
     buffer = collections.deque(maxlen=span)
 
     for _ in range(span):
-        buffer.append(data[data_index])
-        data_index = (data_index + 1) % len(data)
+        buffer.append(batch_data[data_index])
+        data_index = (data_index + 1) % len(batch_data)
 
     for i in range(batch_size // num_skips):
         target = skip_window
@@ -99,6 +102,6 @@ def generate_batch(data, batch_size, num_skips, skip_window):
             batch[i * num_skips + j] = buffer[skip_window]
             labels[i * num_skips + j, 0] = buffer[target]
 
-        buffer.append(data[data_index])
-        data_index = (data_index + 1) % len(data)
+        buffer.append(batch_data[data_index])
+        data_index = (data_index + 1) % len(batch_data)
     return batch, labels
