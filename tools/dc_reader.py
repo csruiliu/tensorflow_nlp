@@ -17,10 +17,8 @@ Data Compression Programs Dataset by Matt Mahoney
 http://mattmahoney.net/dc/
 '''
 
-dc_url = 'http://mattmahoney.net/dc/'
 
-
-def download_dataset(file_name, expected_bytes):
+def download_dataset(dc_url, file_name, expected_bytes):
     dc_dataset = Path('./dataset/' + file_name)
     if not dc_dataset.exists():
         dc_file, _ = urllib.request.urlretrieve(url=dc_url + file_name, filename=dc_dataset)
@@ -104,16 +102,3 @@ def generate_batch(data, batch_size, num_skips, skip_window):
         buffer.append(data[data_index])
         data_index = (data_index + 1) % len(data)
     return batch, labels
-
-
-if __name__ == "__main__":
-    data_index = 0
-
-    text8_file = download_dataset('text8.zip', 31344016)
-    text8_words = load_data(text8_file)
-
-    print('Data size', len(text8_words))
-    text8_data, text8_count, text8_dict, text8_reverse_dict = build_dataset(text8_words, 50000)
-    del text8_words
-    batch, labels = generate_batch(text8_data, 8, 2, 1)
-    print(batch)
