@@ -20,6 +20,11 @@ The implementation of BiLSTM is tested on Universal Dependencies Treebank datase
 
 BERT (Bidirectional Encoder Representations from Transformers) is a transformer-based nerual network architecture for NLP pre-training. 
 
-The implemnetation of BERT is based on the pre-trained model https://tfhub.dev/google/bert_uncased_L-12_H-768_A-12/1 and tested on Large Movie Review Dataset for Binary Sentiment Classification task.
+The implemnetation of BERT is based on the [pre-trained model](https://tfhub.dev/google/bert_uncased_L-12_H-768_A-12/1) and tested on Large Movie Review Dataset for Binary Sentiment Classification task.
 
 
+## Word2Vec ##
+
+Word2Vec, aka word embeddings, is a model that can convert word to vector for further training. 
+
+The implemetation of Word2Vec is test on [Data Compression dataset](http://mattmahoney.net/dc/) for Skip-Gram task, i.e., predict the context word for a given target word.
