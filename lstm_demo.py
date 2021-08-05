@@ -4,7 +4,7 @@ import tools.udtb_reader as udtb_reader
 import tensorflow as tf
 
 
-if __name__ == "__main__":
+def main():
     (train_sentences_x,
      val_sentences_x,
      train_tags_y,
@@ -81,3 +81,7 @@ if __name__ == "__main__":
 
         scores = logit.evaluate(val_sentences_x, udtb_reader.to_categorical(val_tags_y, len(tag2index)))
         print(f"{logit.metrics_names[1]}: {scores[1]}")
+
+
+if __name__ == "__main__":
+    main()
